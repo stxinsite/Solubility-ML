@@ -70,8 +70,10 @@ for num, (k_smile, c_smile, logS) in enumerate(zip(dataset["kekSmiles"], dataset
                                                               y=[],
                                                               edge_attr=edge,
                                                               edge_index=[start_idx, end_idx]))
-    embeddings_vec = embedding_model.get_embeddings(torch_vector).tolist()
-    training_set.append(Data(x=torch.tensor(embeddings_vec, dtype=torch.float),
+    embeddings_vec = embedding_model.get_embeddings(torch_vector)#.tolist()
+    training_set.append(Data(x=embeddings_vec,
+                             #x=torch.tensor(embeddings_vec, dtype=torch.float),
+                             #x=torch.tensor([get_atomic_features(a) for a in mol.GetAtoms()], dtype=torch.float),
                              y=torch.tensor([logS], dtype=torch.float),
                              edge_attr=torch.tensor(edge, dtype=torch.float),
                              edge_index=torch.tensor([start_idx, end_idx], dtype=torch.long)
@@ -84,8 +86,8 @@ print("\n")
 
 input_size = training_set[0].x.size(1)
 print("Model input size:", input_size)
-sol_model = CGCNNetL1Sum(input_size, num_edge_features).to(DEVICE)
-#sol_model = TrfNetL1Sum(input_size, num_edge_features).to(DEVICE)
+#sol_model = CGCNNetL1Sum(input_size, num_edge_features).to(DEVICE)
+sol_model = TrfNetL1Sum(input_size, num_edge_features).to(DEVICE)
 sol_model.train()
 print(sol_model)
 
@@ -122,8 +124,8 @@ training_loader = DataLoader(training_set,
 loss = test(sol_model, training_loader, loss_func)
 print("Test loss:", loss)
 
-with open("output/CGCNN_MSEloss_1.json", "w") as f:
-    f.write(json.dumps(loss_output))
-torch.save(sol_model.state_dict(), "output/model_CGCNN_MSEloss_1.pt")
+# with open("output/Trf_MSEloss_discrt.json", "w") as f:
+#     f.write(json.dumps(loss_output))
+# torch.save(sol_model.state_dict(), "output/model_Trf_MSEloss_discrt.pt")
     
 print("Done!")
